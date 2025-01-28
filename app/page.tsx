@@ -1,4 +1,9 @@
+import Appbar from "./components/Appbar";
 
 export default function Home() {
-  return <div>Hi there</div>
+  console.log(process.env.GOOGLE_CLIENT_ID);
+  return <main>
+    <Appbar/>
+
+  </main>
 }
