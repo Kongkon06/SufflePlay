@@ -36,23 +36,24 @@ export async function POST(req: NextRequest) {
     const res = await youtubesearchai.GetVideoDetails(extractedId);
     const thumbnails = res.thumbnail.thumbnails;
     thumbnails.sort((a:{width : number}, b :{width : number}) =>a.width < b.width ? -1 : 1);
-    console.log(res);
+    console.log(thumbnails);
+    console.log(res.title);
     await prismaClient.stream.create({
       data: {
         userId: data.creatorId,
         url: data.url,
         extractedId,
         type: "Youtube",
-        title:res.title,
-        smallImg: (thumbnails.length > 1 ? thumbnails[thumbnails.length -2] : "https://th.bing.com/th?id=OSK.HEROQNxPStI-rMO8Bzi5IJIOr2sq2_c0F8qNwc-UdDY7ROw&w=472&h=280&c=13&rs=2&o=6&pid=SANGAM"),
-        bigImg : thumbnails[thumbnails.length -1]
+        title: res.title ?? "Can't find video",
+        smallImg: thumbnails.length > 1 ? thumbnails[thumbnails.length - 2].url : "https://th.bing.com/th?id=OSK.HEROQNxPStI-rMO8Bzi5IJIOr2sq2_c0F8qNwc-UdDY7ROw&w=472&h=280&c=13&rs=2&o=6&pid=SANGAM",
+        bigImg: thumbnails[thumbnails.length - 1]?.url ?? ""
       }
-    });
+    });    
 
     return NextResponse.json({ msg: "Added stream" });
-  } catch (e) {
+  } catch (e:any) {
     return NextResponse.json(
-      { msg: "error in received body", error: e },
+      { msg: "error in received body", error: e.message },
       { status: 411 }
     );
   }
