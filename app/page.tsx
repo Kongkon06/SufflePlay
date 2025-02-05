@@ -9,7 +9,7 @@ export default function Home() {
   return <main>
     <Appbar/>
     <Redirect/>
-    <div className="min-h-screen bg-gradient-to-b from-purple-600 to-indigo-900 text-white p-4 overflow-auto">
+    <div className="min-h-screen bg-[conic-gradient(at_top,_var(--tw-gradient-stops))] from-blue-800 via-blue-900 to-indigo-950 text-white p-4 overflow-auto">
       <div className="max-w-6xl mx-auto pt-6">
         {/* Hero Section */}
         <section className="text-center py-12">
