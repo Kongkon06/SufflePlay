@@ -18,8 +18,8 @@ export default function Dashboard() {
   }
   const REFRESH_INTERVAL_MS = 10 * 1000;
   async function refreshStreams() {
-    const res = await axios.get('api/streams/my',{
-      withCredentials:true
+    const res = await fetch('api/streams/my',{
+      credentials:"include"
     });
     console.log(res);
   }
