@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import axios from "axios"
+import { getSession, useSession } from 'next-auth/react'
 
 interface Song{
   id: string,
@@ -18,28 +19,40 @@ interface Song{
     haveUpdated:boolean
 }
 export default function Dashboard() {
-  const [songLink, setSongLink] = useState<Song[]>([]);
+  const [songs, setSongs] = useState<Song[]>([]);
+  const [Link , setLink] = useState("");
 
-  const handleAddSong = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log('Adding song:', songLink)
+  const creatorId = async () => {
+    const session = await getSession();
+    console.log(session?.user?.db_id);
+    return session?.user?.db_id ?? ""
+  };
+  const handleAddSong = async () => {
+   const id = await creatorId();
+   await axios.post('/api/streams',{
+    creatorId:id,
+    url:Link
+   })
   }
   const REFRESH_INTERVAL_MS = 10 * 1000;
   async function refreshStreams() {
     const res = await axios.get('api/streams/my',{
       withCredentials:true
     });
-    setSongLink(res.data.songs);
-    console.log(songLink);
+    setSongs(res.data.songs);
+    console.log("inside refresh");
   }
   useEffect(()=>{
     refreshStreams();
     const interval = setInterval(() => {
+      refreshStreams()
+      console.log("running")
     }, REFRESH_INTERVAL_MS);
+
   },[])
 
   const handleUpvote =async (id:string,haveUpdated:boolean) =>{
-    setSongLink(songLink.map(song=>song.id==id?{
+    setSongs(songs.map(song=>song.id==id?{
       ...song,
       upvotes: haveUpdated ? song.upvotes - 1 : song.upvotes + 1,
       haveUpdated: !song.haveUpdated
@@ -109,17 +122,17 @@ export default function Dashboard() {
               <CardTitle className="text-xl text-blue-100">Add a Song</CardTitle>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleAddSong} className="space-y-4">
+              <form className="space-y-4">
                 <Input 
                   type="url" 
                   placeholder="Paste song link here" 
-                  value={''}
-                  onChange={(e) => {}}
+                  value={Link}
+                  onChange={(e) => {setLink(e.target.value)}}
                   className="bg-white/10 border-blue-500/30 placeholder-blue-300/50 text-blue-100 focus:border-blue-500/50" 
                 />
-                <Button type="submit" 
+                <Button type="button" onClick={handleAddSong} 
                   className="w-full bg-blue-500/20 hover:bg-blue-500/30 text-blue-100 border-blue-500/30">
-                  <Plus className="w-4 h-4 mr-2" />
+                  <Plus className="w-4 h-4 mr-2"  />
                   Add Song
                 </Button>
               </form>
@@ -134,7 +147,7 @@ export default function Dashboard() {
             <CardContent>
               <ScrollArea className="h-[400px] pr-4">
                 <ul className="space-y-4">
-                  {songLink.map((song) => (
+                  {songs.map((song) => (
                     <li key={song.id} 
                       className="flex items-center justify-between bg-blue-500/5 hover:bg-blue-500/10 p-4 rounded-xl border border-blue-500/20 transition-all">
                       <div className="flex items-center">
