@@ -8,27 +8,53 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import axios from "axios"
 
+interface Song{
+  id: string,
+  bigImg: string,
+  smallImg: string,
+  title: string,
+  type:string,
+    upvotes:number
+    haveUpdated:boolean
+}
 export default function Dashboard() {
-  const [songLink, setSongLink] = useState('')
+  const [songLink, setSongLink] = useState<Song[]>([]);
 
   const handleAddSong = (e: React.FormEvent) => {
     e.preventDefault()
     console.log('Adding song:', songLink)
-    setSongLink('')
   }
   const REFRESH_INTERVAL_MS = 10 * 1000;
   async function refreshStreams() {
-    const res = await fetch('api/streams/my',{
-      credentials:"include"
+    const res = await axios.get('api/streams/my',{
+      withCredentials:true
     });
-    console.log(res);
+    setSongLink(res.data.songs);
+    console.log(songLink);
   }
   useEffect(()=>{
     refreshStreams();
     const interval = setInterval(() => {
-      
     }, REFRESH_INTERVAL_MS);
   },[])
+
+  const handleUpvote =async (id:string,haveUpdated:boolean) =>{
+    setSongLink(songLink.map(song=>song.id==id?{
+      ...song,
+      upvotes: haveUpdated ? song.upvotes - 1 : song.upvotes + 1,
+      haveUpdated: !song.haveUpdated
+    }:song).sort((a,b)=>(b.upvotes) - (a.upvotes)))
+    if(haveUpdated){
+      const res = await axios.post('/api/streams/downvotes',{
+        streamId:id
+      });
+    }else{
+      const res = await axios.post('/api/streams/upvotes',{
+        streamId:id
+      })
+    }
+
+  }
   return (
     <div className="min-h-screen bg-[conic-gradient(at_top,_var(--tw-gradient-stops))] from-indigo-800 via-blue-900 to-indigo-950 text-white">
       <div className="max-w-7xl mx-auto p-6">
@@ -87,8 +113,8 @@ export default function Dashboard() {
                 <Input 
                   type="url" 
                   placeholder="Paste song link here" 
-                  value={songLink}
-                  onChange={(e) => setSongLink(e.target.value)}
+                  value={''}
+                  onChange={(e) => {}}
                   className="bg-white/10 border-blue-500/30 placeholder-blue-300/50 text-blue-100 focus:border-blue-500/50" 
                 />
                 <Button type="submit" 
@@ -108,35 +134,27 @@ export default function Dashboard() {
             <CardContent>
               <ScrollArea className="h-[400px] pr-4">
                 <ul className="space-y-4">
-                  {[
-                    { id: 1, title: "Song Title 1", artist: "Artist Name 1", votes: 15, thumbnail: "/placeholder.svg" },
-                    { id: 2, title: "Song Title 2", artist: "Artist Name 2", votes: 8, thumbnail: "/placeholder.svg" },
-                    { id: 3, title: "Song Title 3", artist: "Artist Name 3", votes: 12, thumbnail: "/placeholder.svg" },
-                  ].map((song) => (
+                  {songLink.map((song) => (
                     <li key={song.id} 
                       className="flex items-center justify-between bg-blue-500/5 hover:bg-blue-500/10 p-4 rounded-xl border border-blue-500/20 transition-all">
                       <div className="flex items-center">
                         <div className="relative group">
-                          <img src={song.thumbnail} alt={`${song.title} thumbnail`} 
+                          <img src={song.smallImg} alt={`${song.title} thumbnail`} 
                             className="w-14 h-14 rounded-lg mr-4 ring-2 ring-blue-500/30 transition-all group-hover:ring-blue-500/50" />
                           <div className="absolute inset-0 bg-blue-500/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity" />
                         </div>
                         <div>
-                          <h4 className="font-semibold text-blue-100">{song.title}</h4>
-                          <p className="text-sm text-blue-300">{song.artist}</p>
+                          <h4 className="ml-4 font-semibold text-blue-100">{song.title}</h4>
+                          <p className="text-sm text-blue-300 ml-4">{song.type}</p>
                         </div>
                       </div>
                       <div className="flex items-center space-x-3">
                         <span className="text-sm font-medium bg-blue-500/20 px-3 py-1 rounded-full text-blue-100">
-                          {song.votes} votes
+                          {song.upvotes}
                         </span>
-                        <Button size="sm" variant="outline" 
+                        <Button onClick={()=>{handleUpvote(song.id,song.haveUpdated)}} size="sm" variant="outline" 
                           className="bg-green-500/10 hover:bg-green-500/20 border-green-500/30 text-green-400">
-                          <ThumbsUp className="w-4 h-4" />
-                        </Button>
-                        <Button size="sm" variant="outline" 
-                          className="bg-red-500/10 hover:bg-red-500/20 border-red-500/30 text-red-400">
-                          <ThumbsDown className="w-4 h-4" />
+                            {song.haveUpdated ?  <ThumbsDown className="w-4 h-4" /> : <ThumbsUp className="w-4 h-4" /> }
                         </Button>
                       </div>
                     </li>

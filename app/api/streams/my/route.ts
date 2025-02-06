@@ -2,7 +2,7 @@ import { prismaClient } from "@/app/lib/db";
 import { getServerSession } from "next-auth"; // Ensure you have this setup
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
     try {
         const session = await getServerSession();
 
@@ -26,11 +26,29 @@ export async function GET(req: NextRequest) {
 
         const streams = await prismaClient.stream.findMany({
             where: {
-                userId: user.id,
+              userId: user.id,
             },
-        });
+            include: {
+              _count: {
+                select: {
+                  upvotes: true,
+                },
+              },
+              upvotes:{
+                where:{
+                    userId: user.id
+                }
+              }
+            },
+          });
+          
 
-        return NextResponse.json({ msg: streams });
+        return NextResponse.json({ songs: streams.map(({_count,...rest})=>({
+            ...rest,
+            upvotes: _count.upvotes,
+            haveUpdated: rest.upvotes.length? true : false
+        }) )
+    });
     } catch (error) {
         console.error("Error fetching streams:", error);
         return NextResponse.json({
