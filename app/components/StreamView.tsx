@@ -1,13 +1,22 @@
 "use client"
 import { useEffect, useState } from 'react'
-import { Music, SkipForward, ThumbsUp, ThumbsDown, Plus } from 'lucide-react'
+import { Music, SkipForward, ThumbsUp, ThumbsDown, Plus, Loader2, SkipBack, Pause, Play,Share2 } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import axios from "axios"
-import { getSession, useSession } from 'next-auth/react'
+import { getSession } from 'next-auth/react'
+import { toast } from '@/hooks/use-toast'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 
 interface Song{
   id: string,
@@ -18,25 +27,23 @@ interface Song{
     upvotes:number
     haveUpdated:boolean
 }
-export default function Dashboard() {
+export default function StreamView({creatorId}:{creatorId:string}) {
   const [songs, setSongs] = useState<Song[]>([]);
   const [Link , setLink] = useState("");
+  const [Loading , setLoading] = useState(false);
+  const [Playing , setPlay] = useState(false);
+  const [shareUrl , setShareUrl] = useState('');
 
-  const creatorId = async () => {
-    const session = await getSession();
-    console.log(session?.user?.db_id);
-    return session?.user?.db_id ?? ""
-  };
   const handleAddSong = async () => {
-   const id = await creatorId();
+    setLoading(true);
    await axios.post('/api/streams',{
-    creatorId:id,
+    creatorId:creatorId,
     url:Link
-   })
+   }).then(()=>{setLoading(false);})
   }
   const REFRESH_INTERVAL_MS = 10 * 1000;
   async function refreshStreams() {
-    const res = await axios.get('api/streams/my',{
+    const res = await axios.get('/api/streams',{
       withCredentials:true
     });
     setSongs(res.data.songs);
@@ -44,12 +51,36 @@ export default function Dashboard() {
   }
   useEffect(()=>{
     refreshStreams();
+    async function fetchUserId() {
+      const session = await getSession();
+      const creatorId = session?.user?.db_id ?? "";
+      setShareUrl(`${window.location.origin}/dashboard/${creatorId}`);
+    };
+    fetchUserId();
     const interval = setInterval(() => {
       refreshStreams()
       console.log("running")
+      console.log(Loading);
     }, REFRESH_INTERVAL_MS);
 
   },[])
+
+  const handleShare = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      toast({
+        title: "Link Copied",
+        description: "The dashboard link has been copied to your clipboard.",
+      });
+    } catch (err) {
+      console.error("Failed to copy: ", err);
+      toast({
+        title: "Failed to Copy",
+        description: "Please copy the link manually.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleUpvote =async (id:string,haveUpdated:boolean) =>{
     setSongs(songs.map(song=>song.id==id?{
@@ -81,10 +112,34 @@ export default function Dashboard() {
               Suffle Play
             </h1>
           </div>
+          <div className='flex gap-4 items-center'>
+          <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="bg-white/20 hover:bg-white/30">
+                  <Share2 className="w-4 h-4 mr-2" />
+                  Share
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Share dashboard</DialogTitle>
+                  <DialogDescription>
+                    Anyone with this link will be able to view and add songs to your dashboard.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="flex items-center space-x-2">
+                  <Input value={shareUrl} readOnly className="bg-white/20 border-white/30" />
+                  <Button type="submit" onClick={handleShare}>
+                    Copy
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
           <Avatar className="h-12 w-12 ring-2 ring-blue-500/30 transition-all hover:ring-blue-500/50">
             <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
             <AvatarFallback>CN</AvatarFallback>
           </Avatar>
+          </div>
         </header>
 
         {/* Main Content */}
@@ -107,11 +162,20 @@ export default function Dashboard() {
                     <p className="text-sm text-blue-300">Artist Name</p>
                   </div>
                 </div>
+                <div className='flex gap-4'>
                 <Button variant="secondary" 
                   className="bg-blue-500/20 hover:bg-blue-500/30 text-blue-100 border-blue-500/30">
-                  <SkipForward className="w-4 h-4 mr-2" />
-                  Skip
+                    <SkipBack className="w-4 h-4"/>
                 </Button>
+                <Button onClick={()=>setPlay(!Playing)} variant="secondary" 
+                  className="bg-blue-500/20 hover:bg-blue-500/30 text-blue-100 border-blue-500/30">
+                    {Playing ? <Pause className="w-4 h-4"/>: <Play className="w-4 h-4"/>}
+                </Button>
+                <Button variant="secondary" 
+                  className="bg-blue-500/20 hover:bg-blue-500/30 text-blue-100 border-blue-500/30">
+                  <SkipForward className="w-4 h-4" />
+                </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -132,8 +196,7 @@ export default function Dashboard() {
                 />
                 <Button type="button" onClick={handleAddSong} 
                   className="w-full bg-blue-500/20 hover:bg-blue-500/30 text-blue-100 border-blue-500/30">
-                  <Plus className="w-4 h-4 mr-2"  />
-                  Add Song
+                    {Loading ? <div><Loader2></Loader2></div> : <div className='flex'> <Plus className="w-4 h-4 mr-2"  /> Add Song</div>}
                 </Button>
               </form>
             </CardContent>
@@ -153,7 +216,7 @@ export default function Dashboard() {
                       <div className="flex items-center">
                         <div className="relative group">
                           <img src={song.smallImg} alt={`${song.title} thumbnail`} 
-                            className="w-14 h-14 rounded-lg mr-4 ring-2 ring-blue-500/30 transition-all group-hover:ring-blue-500/50" />
+                            className="w-14 h-14 object-cover rounded-lg mr-4 ring-2 ring-blue-500/30 transition-all group-hover:ring-blue-500/50" />
                           <div className="absolute inset-0 bg-blue-500/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity" />
                         </div>
                         <div>

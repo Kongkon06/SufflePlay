@@ -1,17 +1,24 @@
 "use client";
 
-import { useSession } from "next-auth/react";
+import { getSession, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation"; // Use from next/navigation
 import { useEffect } from "react";
+
 
 export function Redirect() {
   const { data: session } = useSession();
   const router = useRouter();
 
   useEffect(() => {
-    if (session?.user) {
-      router.push("/dashboard");
+    async function redirectToDashboard() {
+      if (session?.user) {
+        const sessionData = await getSession();
+        const creatorId = sessionData?.user?.db_id ?? "";
+        router.push(`/dashboard/${creatorId}`);
+      }
     }
+
+    redirectToDashboard();
   }, [session, router]);
 
   return null;
