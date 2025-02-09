@@ -27,7 +27,7 @@ interface Song{
     upvotes:number
     haveUpdated:boolean
 }
-export default function StreamView({creatorId}:{creatorId:string}) {
+export default function StreamView({creatorId,fetchFn}:{creatorId:string,fetchFn? : ()=> void}) {
   const [songs, setSongs] = useState<Song[]>([]);
   const [Link , setLink] = useState("");
   const [Loading , setLoading] = useState(false);
@@ -49,21 +49,16 @@ export default function StreamView({creatorId}:{creatorId:string}) {
     setSongs(res.data.songs);
     console.log("inside refresh");
   }
-  useEffect(()=>{
-    refreshStreams();
+  useEffect(() => {
+    if(fetchFn){fetchFn()}else{refreshStreams();};
     async function fetchUserId() {
       const session = await getSession();
       const creatorId = session?.user?.db_id ?? "";
-      setShareUrl(`${window.location.origin}/dashboard/${creatorId}`);
-    };
+      setShareUrl(`${window.location.hostname}:3000/test/${creatorId}`);
+    }
     fetchUserId();
-    const interval = setInterval(() => {
-      refreshStreams()
-      console.log("running")
-      console.log(Loading);
-    }, REFRESH_INTERVAL_MS);
-
-  },[])
+  }, []);
+  
 
   const handleShare = async () => {
     try {

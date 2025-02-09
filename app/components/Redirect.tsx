@@ -14,7 +14,7 @@ export function Redirect() {
       if (session?.user) {
         const sessionData = await getSession();
         const creatorId = sessionData?.user?.db_id ?? "";
-        router.push(`/dashboard/${creatorId}`);
+        router.push(`/dashboard`);
       }
     }
 
