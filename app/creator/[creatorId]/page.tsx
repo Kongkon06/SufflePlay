@@ -21,12 +21,20 @@ export default function Dashboard() {
   if (!params.creatorId) {
     return <p>No Creator ID found!</p>;
   }
-  async function refreshStreams() {
-    const res = await axios.get(`/api/streams/test:${creatorId}`,{
-      withCredentials:true
-    });
-    return res;
+  async function refreshStreams(): Promise<Song[]> {
+    try {
+      const res = await axios.get(`/api/streams/test/${creatorId}`, {
+        withCredentials: true,
+      });
+      console.log("inside refresh");
+  
+      // Assuming the API returns an array of songs
+      return res.data.songs;
+    } catch (error) {
+      console.error("Failed to refresh streams:", error);
+      return [];
+    }
   }
   const creatorId = params.creatorId?.toString() ?? "";
-  return <StreamView creatorId={creatorId} />;
+  return <StreamView creatorId={creatorId} fetchFn={refreshStreams} />;
 }

@@ -27,7 +27,14 @@ interface Song{
     upvotes:number
     haveUpdated:boolean
 }
-export default function StreamView({creatorId,fetchFn}:{creatorId:string,fetchFn? : ()=> void}) {
+
+export default function StreamView({
+  creatorId,
+  fetchFn,
+}: {
+  creatorId: string;
+  fetchFn?: () => Promise<Song[]>;
+}) {
   const [songs, setSongs] = useState<Song[]>([]);
   const [Link , setLink] = useState("");
   const [Loading , setLoading] = useState(false);
@@ -49,8 +56,20 @@ export default function StreamView({creatorId,fetchFn}:{creatorId:string,fetchFn
     setSongs(res.data.songs);
     console.log("inside refresh");
   }
+  async function handleFetch() {
+    if (fetchFn) {
+      try {
+        const res = await fetchFn();
+        setSongs(res);
+      } catch (err) {
+        console.error("Failed to fetch songs:", err);
+      }
+    }
+  }
   useEffect(() => {
-    if(fetchFn){fetchFn()}else{refreshStreams();};
+    if (fetchFn) {
+     handleFetch();
+    }else {refreshStreams();}
     async function fetchUserId() {
       const session = await getSession();
       const creatorId = session?.user?.db_id ?? "";
