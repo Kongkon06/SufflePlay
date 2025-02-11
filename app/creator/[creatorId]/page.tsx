@@ -23,7 +23,7 @@ export default function Dashboard() {
   }
   async function refreshStreams(): Promise<Song[]> {
     try {
-      const res = await axios.get(`/api/streams/test/${creatorId}`, {
+      const res = await axios.get(`/api/streams?spaceId=${creatorId}`, {
         withCredentials: true,
       });
       console.log("inside refresh");

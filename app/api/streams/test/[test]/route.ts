@@ -73,7 +73,6 @@ export async function GET(request: Request, { params }: { params: { creatorId: s
         }, { status: 401 });
     }
 
-
     const streams = await prismaClient.stream.findMany({
         where: {
           userId: creatorId,
@@ -86,7 +85,7 @@ export async function GET(request: Request, { params }: { params: { creatorId: s
           },
           upvotes:{
             where:{
-                userId: creatorId
+                userId: session?.user?.email ?? ""
             }
           }
         },

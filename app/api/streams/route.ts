@@ -1,7 +1,7 @@
 import { prismaClient } from "@/app/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-//@ts-ignore
+//@ts-expect-error
 import youtubesearchai from "youtube-search-api";
 import { getServerSession } from "next-auth";
 
@@ -60,10 +60,10 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(req:NextRequest) {
     try {
             const session = await getServerSession();
-    
+            const id = req.nextUrl.searchParams.get("spaceId");
             if (!session?.user?.email) {
                 return NextResponse.json({
                     error: "User not authenticated",
@@ -84,7 +84,7 @@ export async function GET() {
     
             const streams = await prismaClient.stream.findMany({
                 where: {
-                  userId: user.id,
+                  userId: id ?? "",
                 },
                 include: {
                   _count: {

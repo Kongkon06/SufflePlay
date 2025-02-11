@@ -17,6 +17,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import Appbar from './Appbar'
 
 interface Song{
   id: string,
@@ -50,7 +51,7 @@ export default function StreamView({
   }
   const REFRESH_INTERVAL_MS = 10 * 1000;
   async function refreshStreams() {
-    const res = await axios.get('/api/streams',{
+    const res = await axios.get(`/api/streams?spaceId=${creatorId}`,{
       withCredentials:true
     });
     setSongs(res.data.songs);
@@ -60,7 +61,7 @@ export default function StreamView({
     if (fetchFn) {
       try {
         const res = await fetchFn();
-        setSongs(res);
+        setSongs(res.sort((a,b)=>a.upvotes < b.upvotes ? -1 : 1));
       } catch (err) {
         console.error("Failed to fetch songs:", err);
       }
@@ -73,7 +74,7 @@ export default function StreamView({
     async function fetchUserId() {
       const session = await getSession();
       const creatorId = session?.user?.db_id ?? "";
-      setShareUrl(`${window.location.hostname}:3000/test/${creatorId}`);
+      setShareUrl(`${window.location.hostname}:3000/creator/${creatorId}`);
     }
     fetchUserId();
   }, []);
@@ -115,9 +116,10 @@ export default function StreamView({
   }
   return (
     <div className="min-h-screen bg-[conic-gradient(at_top,_var(--tw-gradient-stops))] from-indigo-800 via-blue-900 to-indigo-950 text-white">
+      <Appbar/>
       <div className="max-w-7xl mx-auto p-6">
         {/* Header */}
-        <header className="flex justify-between items-center mb-8 backdrop-blur-sm bg-white/5 rounded-2xl p-4">
+        <header className="flex justify-between items-center mt-12 mb-8 backdrop-blur-sm bg-white/5 rounded-2xl p-4">
           <div className="flex items-center space-x-3">
             <div className="p-2 bg-blue-500/20 rounded-xl">
               <Music className="w-8 h-8" />
