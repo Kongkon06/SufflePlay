@@ -13,15 +13,5 @@ interface Song{
     haveUpdated:boolean
 }
 export default function Dashboard() {
-  const [creatorId , setcreatorId] = useState('');
-  
-  useEffect(()=>{
-    async function fetchUserId() {
-      const session = await getSession();
-      setcreatorId(session?.user?.db_id ?? "");
-      console.log(session?.user?.db_id);
-    }
-    fetchUserId();
-  },[])
-  return <StreamView creatorId={creatorId}></StreamView>
+  return <StreamView></StreamView>
 }

@@ -33,7 +33,7 @@ export default function StreamView({
   creatorId,
   fetchFn,
 }: {
-  creatorId: string;
+  creatorId?: string;
   fetchFn?: () => Promise<Song[]>;
 }) {
   const [songs, setSongs] = useState<Song[]>([]);
@@ -51,7 +51,8 @@ export default function StreamView({
   }
   const REFRESH_INTERVAL_MS = 10 * 1000;
   async function refreshStreams() {
-    const res = await axios.get(`/api/streams?spaceId=${creatorId}`,{
+    const session = await getSession();
+    const res = await axios.get(`/api/streams?spaceId=${session?.user.db_id}`,{
       withCredentials:true
     });
     setSongs(res.data.songs);
@@ -73,10 +74,10 @@ export default function StreamView({
     }else {refreshStreams();}
     async function fetchUserId() {
       const session = await getSession();
-      const creatorId = session?.user?.db_id ?? "";
-      setShareUrl(`${window.location.hostname}:3000/creator/${creatorId}`);
-    }
-    fetchUserId();
+      const spaceId = session?.user?.db_id;
+      setShareUrl(`${window.location.hostname}:3000/creator/${spaceId}`);
+    };
+    if(creatorId){setShareUrl(`${window.location.hostname}:3000/creator/${creatorId}`);}else{ fetchUserId();}
   }, []);
   
 
