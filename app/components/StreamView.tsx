@@ -18,6 +18,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import Appbar from './Appbar'
+import { error } from 'console'
 
 interface Song{
   id: string,
@@ -28,17 +29,30 @@ interface Song{
     upvotes:number
     haveUpdated:boolean
 }
+interface ActiveStream{
+  id:string,
+  userId:string,
+  streamId:string,
+  stream:Song
+}
 
+interface Data{
+  songs:Song[],
+  activeStream?:ActiveStream,
+}
 export default function StreamView({
   creatorId,
+  playVideo=false,
   fetchFn,
 }: {
   creatorId?: string;
-  fetchFn?: () => Promise<Song[]>;
+  playVideo:boolean;
+  fetchFn?: () => Promise<Data>;
 }) {
   const [songs, setSongs] = useState<Song[]>([]);
   const [Link , setLink] = useState("");
   const [Loading , setLoading] = useState(false);
+  const [currentSong , setCurrent] = useState<ActiveStream>();
   const [Playing , setPlay] = useState(false);
   const [shareUrl , setShareUrl] = useState('');
 
@@ -56,13 +70,25 @@ export default function StreamView({
       withCredentials:true
     });
     setSongs(res.data.songs);
+    setCurrent(res.data.activeStream);
     console.log("inside refresh");
+  }
+  async function PlayNext(){
+    try{
+      const res = await axios.get('api/streams/next',{
+        withCredentials: true,
+      }); 
+      console.log(res.data);
+    }catch(e){
+      console.log(e);
+    }
   }
   async function handleFetch() {
     if (fetchFn) {
       try {
         const res = await fetchFn();
-        setSongs(res.sort((a,b)=>a.upvotes < b.upvotes ? -1 : 1));
+        setSongs(res.songs.sort((a,b)=>a.upvotes < b.upvotes ? -1 : 1));
+        if(res.activeStream){setCurrent(res.activeStream);console.log("Inside active")}
       } catch (err) {
         console.error("Failed to fetch songs:", err);
       }
@@ -170,13 +196,13 @@ export default function StreamView({
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   <div className="relative group">
-                    <img src="/placeholder.svg" alt="Album cover" 
+                    <img src={currentSong?.stream.smallImg} alt="Album cover" 
                       className="w-20 h-20 rounded-xl mr-6 ring-2 ring-blue-500/30 transition-all group-hover:ring-blue-500/50" />
                     <div className="absolute inset-0 bg-blue-500/10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
                   <div>
                     <h3 className="text-2xl font-bold text-blue-100">Song Title</h3>
-                    <p className="text-sm text-blue-300">Artist Name</p>
+                    <p className="text-sm text-blue-300">{currentSong?.stream.title}</p>
                   </div>
                 </div>
                 <div className='flex gap-4'>
@@ -188,7 +214,7 @@ export default function StreamView({
                   className="bg-blue-500/20 hover:bg-blue-500/30 text-blue-100 border-blue-500/30">
                     {Playing ? <Pause className="w-4 h-4"/>: <Play className="w-4 h-4"/>}
                 </Button>
-                <Button variant="secondary" 
+                <Button variant="secondary" onClick={PlayNext}
                   className="bg-blue-500/20 hover:bg-blue-500/30 text-blue-100 border-blue-500/30">
                   <SkipForward className="w-4 h-4" />
                 </Button>
@@ -227,7 +253,7 @@ export default function StreamView({
             <CardContent>
               <ScrollArea className="h-[400px] pr-4">
                 <ul className="space-y-4">
-                  {songs.map((song) => (
+                  {songs.sort((a,b)=>(a.upvotes < b.upvotes ? 1 : -1)).map((song) => (
                     <li key={song.id} 
                       className="flex items-center justify-between bg-blue-500/5 hover:bg-blue-500/10 p-4 rounded-xl border border-blue-500/20 transition-all">
                       <div className="flex items-center">

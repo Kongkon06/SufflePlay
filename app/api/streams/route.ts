@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
 export async function GET(req:NextRequest) {
     try {
             const session = await getServerSession();
-            const id = req.nextUrl.searchParams.get("spaceId");
+            const creatorId = req.nextUrl.searchParams.get("spaceId");
             if (!session?.user?.email) {
                 return NextResponse.json({
                     error: "User not authenticated",
@@ -82,9 +82,9 @@ export async function GET(req:NextRequest) {
                 }, { status: 404 });
             }
     
-            const streams = await prismaClient.stream.findMany({
+            const [streams , activeStream] =await Promise.all([ await prismaClient.stream.findMany({
                 where: {
-                  userId: id ?? "",
+                  userId: creatorId ?? "",
                 },
                 include: {
                   _count: {
@@ -98,14 +98,21 @@ export async function GET(req:NextRequest) {
                     }
                   }
                 },
-              });
+              }),prismaClient.currentStream.findFirst({
+                where:{
+                  userId:creatorId ?? ""
+                },
+                include:{
+                  stream:true
+                }
+              })]);
               
     
             return NextResponse.json({ songs: streams.map(({_count,...rest})=>({
                 ...rest,
                 upvotes: _count.upvotes,
                 haveUpdated: rest.upvotes.length? true : false
-            }) )
+            }) ),activeStream
         });
         } catch (error) {
             console.error("Error fetching streams:", error);

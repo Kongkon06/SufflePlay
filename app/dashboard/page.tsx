@@ -13,5 +13,5 @@ interface Song{
     haveUpdated:boolean
 }
 export default function Dashboard() {
-  return <StreamView></StreamView>
+  return <StreamView playVideo={true} ></StreamView>
 }
