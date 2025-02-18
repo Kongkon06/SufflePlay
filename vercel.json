@@ -2,11 +2,9 @@
     "rewrites":  [
       {"source": "/(.*)", "destination": "/"}
     ],
-    "build": {
-      "commands": [
+    "buildCommand": [
         "prisma generate",
         "next build"
       ]
-    }
   }
   
