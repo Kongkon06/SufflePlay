@@ -12,9 +12,6 @@ interface Song{
     upvotes:number
     haveUpdated:boolean
 }
-interface StreamViewProps {
-  creatorId: string;
-}
 interface ActiveStream{
   id:string,
   userId:string,

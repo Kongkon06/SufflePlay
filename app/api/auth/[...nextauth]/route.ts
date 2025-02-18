@@ -11,7 +11,7 @@ const handler = NextAuth({
   ],
   secret: process.env.NEXTAUTH_SECRET || "secret",
   callbacks: {
-    async signIn({ user, account, profile }) {
+    async signIn({ user }) {
       if (!user?.email) {
         console.error("Sign-in failed: Missing email.");
         return false;

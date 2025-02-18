@@ -29,13 +29,22 @@ export async function POST(req:NextRequest){
             return NextResponse.json({
                 msg:"done"
             })
-        }catch(e:any){
+        }catch(error: unknown) {
+            if (error instanceof Error) {
+                return NextResponse.json({
+                    msg: "Error while upvoting: " + error.message
+                }, {
+                    status: 411
+                });
+            }
+        
             return NextResponse.json({
-                msg:"Error while upvoting" + e.message
-            },{
-                status:411
-            })
+                msg: "An unknown error occurred"
+            }, {
+                status: 411
+            });
         }
+        
 
 }
 

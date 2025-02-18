@@ -18,7 +18,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import Appbar from './Appbar'
-import { error } from 'console'
 
 interface Song{
   id: string,
@@ -94,16 +93,20 @@ export default function StreamView({
       }
     }
   }
-  useEffect(() => {
+  const hit = ()=>{
     if (fetchFn) {
-     handleFetch();
-    }else {refreshStreams();}
+      handleFetch();
+     }else {refreshStreams();}
+  }
+  useEffect(() => {
     async function fetchUserId() {
       const session = await getSession();
       const spaceId = session?.user?.db_id;
       setShareUrl(`${window.location.hostname}:3000/creator/${spaceId}`);
     };
+    console.log(playVideo);
     if(creatorId){setShareUrl(`${window.location.hostname}:3000/creator/${creatorId}`);}else{ fetchUserId();}
+    setInterval(()=>{hit();},REFRESH_INTERVAL_MS);
   }, []);
   
 
@@ -131,11 +134,11 @@ export default function StreamView({
       haveUpdated: !song.haveUpdated
     }:song).sort((a,b)=>(b.upvotes) - (a.upvotes)))
     if(haveUpdated){
-      const res = await axios.post('/api/streams/downvotes',{
+      await axios.post('/api/streams/downvotes',{
         streamId:id
       });
     }else{
-      const res = await axios.post('/api/streams/upvotes',{
+       await axios.post('/api/streams/upvotes',{
         streamId:id
       })
     }

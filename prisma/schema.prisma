@@ -40,7 +40,7 @@ model Upvote {
   id       String @id @default(uuid())
   userId   String
   streamId String
-  stream   Stream @relation(fields: [streamId], references: [id])
+  stream   Stream @relation(fields: [streamId], references: [id], onDelete: Cascade) 
   user     User   @relation(fields: [userId], references: [id])
 
   @@unique([userId, streamId])

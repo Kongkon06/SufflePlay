@@ -1,14 +1,10 @@
 "use client"
 
 import { Button } from "@/components/ui/button";
-import { getSession, signIn, signOut, useSession } from "next-auth/react"
+import { signIn, signOut, useSession } from "next-auth/react"
 
-export default function (){
+export default function Appbar(){
     const session = useSession();
-    async function getCreatorID() {
-      const session = await getSession();
-      return session?.user?.db_id ?? "";
-    }
     return <div className="h-16 w-full backdrop-blur-md fixed z-40 flex justify-between items-center border-b px-4">
     <h1 className="text-lg font-bol text-white">SufflePlay</h1>
     {session.data?.user ? (

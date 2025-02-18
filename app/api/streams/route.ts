@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 //@ts-expect-error
 import youtubesearchai from "youtube-search-api";
+// Its a npm package that doesnt have strict types
+
 import { getServerSession } from "next-auth";
 
 const createStreamSchema = z.object({
@@ -52,11 +54,19 @@ export async function POST(req: NextRequest) {
     });    
 
     return NextResponse.json({ msg: "Added stream" });
-  } catch (e:any) {
-    return NextResponse.json(
-      { msg: "error in received body", error: e.message },
-      { status: 411 }
-    );
+  } catch (e:unknown) {
+    if (e instanceof Error) {
+      return NextResponse.json({
+          msg: "Error while upvoting: " + e.message,
+      }, {
+          status: 411
+      })
+  }
+  return NextResponse.json({
+      msg: "An unknown error occurred",
+  }, {
+      status: 411
+  })
   }
 }
 

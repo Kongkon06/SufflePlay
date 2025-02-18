@@ -12,8 +12,6 @@ export function Redirect() {
   useEffect(() => {
     async function redirectToDashboard() {
       if (session?.user) {
-        const sessionData = await getSession();
-        const creatorId = sessionData?.user?.db_id ?? "";
         router.push(`/dashboard`);
       }
     }
