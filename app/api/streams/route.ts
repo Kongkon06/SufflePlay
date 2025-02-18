@@ -1,9 +1,8 @@
 import { prismaClient } from "@/app/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-//@ts-expect-error
+//@ts-expect-error: Youtubeapi has not type defination
 import youtubesearchai from "youtube-search-api";
-// Its a npm package that doesnt have strict types
 
 import { getServerSession } from "next-auth";
 

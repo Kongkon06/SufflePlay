@@ -7,8 +7,8 @@ import { Redirect } from "./components/Redirect";
 export default function Home() {
   console.log(process.env.GOOGLE_CLIENT_ID);
   return <main>
-    <Appbar/>
-    <Redirect/>
+    <Appbar />
+    <Redirect />
     <div className="min-h-screen bg-[conic-gradient(at_top,_var(--tw-gradient-stops))] from-blue-800 via-blue-900 to-indigo-950 text-white p-4 overflow-auto">
       <div className="max-w-6xl mx-auto pt-6">
         {/* Hero Section */}
@@ -63,7 +63,7 @@ export default function Home() {
           <Card className="bg-white/10 border-white/20">
             <CardHeader>
               <CardTitle className="flex items-center text-white text-xl">
-                <Headphones className="w-6 h-6 mr-2 text-white"/>
+                <Headphones className="w-6 h-6 mr-2 text-white" />
                 Discover
               </CardTitle>
             </CardHeader>
@@ -78,10 +78,11 @@ export default function Home() {
 
         {/* Additional Info */}
         <section className="text-center mb-8">
+          {/* eslint-disable-next-line react/no-unescaped-entities */}
           <p className="text-lg mb-4">
-            FanTune is loading up a world where your voice shapes the music stream. Whether you're a creator or a
-            listener, get ready to be part of something revolutionary.
+            FanTune is loading up a world where your voice shapes the music stream. Whether you're a creator or a listener, get ready to be part of something revolutionary.
           </p>
+
           <p className="text-sm text-purple-200">Hang tight! We're tuning up your personalized music experience...</p>
         </section>
       </div>
