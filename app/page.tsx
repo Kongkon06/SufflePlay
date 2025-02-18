@@ -80,10 +80,10 @@ export default function Home() {
         <section className="text-center mb-8">
           {/* eslint-disable-next-line react/no-unescaped-entities */}
           <p className="text-lg mb-4">
-            FanTune is loading up a world where your voice shapes the music stream. Whether you're a creator or a listener, get ready to be part of something revolutionary.
+            FanTune is loading up a world where your voice shapes the music stream. Whether you are a creator or a listener, get ready to be part of something revolutionary.
           </p>
 
-          <p className="text-sm text-purple-200">Hang tight! We're tuning up your personalized music experience...</p>
+          <p className="text-sm text-purple-200">Hang tight! We are tuning up your personalized music experience...</p>
         </section>
       </div>
     </div>
